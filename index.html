@@ -1,0 +1,1184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>NextGen AOP SDLC</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#F8F9FB;--surface:#FFFFFF;--border:#E2E5EC;--text:#1A1D27;--muted:#6B7280;--subtle:#EFF1F8;
+    --shared-bg:#FFFBEB;--shared-border:#E9D97A;--shared-accent:#B8860B;--shared-pill-bg:#FEF3C7;--shared-pill-text:#7A5F00;
+    --anti-bg:#FEF2F2;--anti-border:#FCA5A5;--anti-text:#7F1D1D;
+    --cap-bg:#F0FDF4;--cap-border:#A7F3D0;--cap-label:#065F46;--cap-text:#047857;--cap-pill-bg:#ECFDF5;
+    --row-alt:#FAFAFA;--row-hover:#F3F4F6;--tab-both:#E2E5EC;
+    --p1-bg:#FEF2F2;--p1-border:#FCA5A5;
+    --p2-bg:#FFF7ED;--p2-border:#FDBA74;
+    --p3-bg:#FFFBEB;--p3-border:#FCD34D;
+    --p4-bg:#F9FAFB;--p4-border:#D1D5DB;
+  }
+  [data-theme="dark"]{
+    --bg:#0D0F17;--surface:#151820;--border:#252A3A;--text:#E8EAF2;--muted:#7B82A0;--subtle:#1C2033;
+    --shared-bg:#1C1A0D;--shared-border:#3D3610;--shared-accent:#B8860B;--shared-pill-bg:#2A2408;--shared-pill-text:#E8C547;
+    --anti-bg:#2D0F0F;--anti-border:#7F1D1D;--anti-text:#FCA5A5;
+    --cap-bg:#0A1F15;--cap-border:#14532D;--cap-label:#6EE7B7;--cap-text:#34D399;--cap-pill-bg:#0A1F15;
+    --row-alt:#1A1D26;--row-hover:#1E2235;--tab-both:#2A2D3E;
+    --p1-bg:#2D0F0F;--p1-border:#7F1D1D;
+    --p2-bg:#1F1208;--p2-border:#7C2D12;
+    --p3-bg:#1C1A0D;--p3-border:#713F12;
+    --p4-bg:#181A22;--p4-border:#374151;
+  }
+  body{font-family:'Georgia','Times New Roman',serif;background:var(--bg);min-height:100vh;color:var(--text);transition:background 0.3s,color 0.3s}
+  button{cursor:pointer}
+  .phase-pill{transition:all 0.2s;cursor:pointer}
+  .phase-pill:hover{transform:translateY(-1px)}
+  .task-card{transition:all 0.15s}
+  .task-card:hover{transform:translateX(3px)}
+  .ceremony-card{transition:all 0.2s;cursor:pointer;border-radius:10px;padding:20px}
+  .ceremony-card:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,0,0,0.12)}
+  .sla-row{transition:background 0.1s}
+  .sla-row:hover{background:var(--row-hover)}
+  ::-webkit-scrollbar{width:4px;height:4px}
+  ::-webkit-scrollbar-track{background:var(--bg)}
+  ::-webkit-scrollbar-thumb{background:#7B82A0;border-radius:2px}
+  /* layout helpers */
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  .grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+  .grid-5{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+  .flex{display:flex}
+  .flex-col{display:flex;flex-direction:column}
+  .flex-wrap{flex-wrap:wrap}
+  .items-center{align-items:center}
+  .items-start{align-items:flex-start}
+  .gap-4{gap:4px}.gap-6{gap:6px}.gap-8{gap:8px}.gap-10{gap:10px}.gap-12{gap:12px}.gap-16{gap:16px}.gap-20{gap:20px}.gap-24{gap:24px}
+  .mono{font-family:'IBM Plex Mono',monospace}
+  .sans{font-family:'Inter',sans-serif}
+  .serif{font-family:'Playfair Display',serif}
+  .hidden{display:none!important}
+  /* Theme toggle */
+  .theme-toggle{background:var(--subtle);border:1px solid var(--border);border-radius:100px;padding:6px 14px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.1em;color:var(--muted);transition:all 0.2s;display:flex;align-items:center;gap:8px}
+  .theme-toggle:hover{color:var(--text);border-color:var(--muted)}
+  /* main nav */
+  .main-nav-btn{padding:16px 24px;background:transparent;border:none;border-bottom:2px solid transparent;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);transition:all 0.2s;white-space:nowrap;cursor:pointer}
+  .main-nav-btn.active{color:var(--text);border-bottom-color:var(--text);font-weight:600}
+  .main-nav-btn:hover:not(.active){color:var(--text)}
+  /* tab toggle */
+  .tab-btn-sm{transition:all 0.15s;cursor:pointer;border:none;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;padding:8px 16px;border-radius:4px;background:transparent;color:var(--muted)}
+  /* task card */
+  .task-card-inner{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:14px 16px}
+  /* shared pills */
+  .shared-pill{font-family:'Inter',sans-serif;font-size:12px;color:var(--shared-pill-text);background:var(--shared-pill-bg);border:1px solid var(--shared-border);border-radius:100px;padding:6px 14px}
+  /* ceremony active card */
+  .cer-detail{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .cer-col-l{padding:28px 32px;border-right:1px solid var(--border)}
+  .cer-col-r{padding:28px 32px}
+  /* anti-pattern */
+  .anti-card{display:flex;gap:10px;align-items:flex-start;padding:8px 12px;background:var(--anti-bg);border-radius:6px;border:1px solid var(--anti-border);font-family:'Inter',sans-serif;font-size:12px;color:var(--anti-text)}
+  /* capacity */
+  .cap-box{background:var(--cap-bg);border:1px solid var(--cap-border);border-radius:8px;padding:14px 16px;margin-bottom:12px}
+  .cap-pill{font-family:'Inter',sans-serif;font-size:11px;color:var(--cap-label);background:var(--cap-pill-bg);border:1px solid var(--cap-border);border-radius:4px;padding:3px 8px}
+  /* sprint cal */
+  .cal-cell{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px}
+  /* sprint metrics */
+  .metric-box{padding:16px;background:var(--subtle);border-radius:8px;border:1px solid var(--border)}
+  /* RACI */
+  .raci-header{background:var(--text);padding:12px 16px;gap:8px;display:grid;grid-template-columns:220px repeat(7,1fr)}
+  .raci-row{display:grid;grid-template-columns:220px repeat(7,1fr);padding:10px 16px;gap:8px;border-bottom:1px solid var(--border);transition:background 0.1s}
+  .raci-row:hover{background:var(--row-hover)}
+  /* RACI legend */
+  .raci-badge{display:flex;align-items:center;gap:10px;padding:8px 14px;background:var(--surface);border:1px solid var(--border);border-radius:8px}
+  /* support */
+  .triage-step{background:var(--surface);border:1px solid var(--border);padding:18px 16px;min-width:160px;flex:1}
+  .priority-tier{background:var(--surface);border-radius:10px;overflow:hidden}
+  .tier-header{display:flex;align-items:center;gap:20px;padding:18px 24px;cursor:pointer;transition:background 0.15s}
+  .sla-table{width:100%;border-collapse:collapse}
+  .sla-table th{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:0.08em;color:var(--muted);text-transform:uppercase;text-align:left;padding:10px 16px;font-weight:500;background:var(--subtle)}
+  .sla-table td{padding:12px 16px;border-top:1px solid var(--border)}
+  /* nav dots */
+  .nav-dot{height:6px;border-radius:3px;cursor:pointer;transition:all 0.2s;background:var(--border)}
+  .nav-dot.active{width:24px!important}
+  /* page section */
+  .page-section{padding:40px 48px}
+  @media(max-width:900px){
+    .page-section{padding:24px 20px}
+    .grid-2{grid-template-columns:1fr}
+    .grid-3{grid-template-columns:1fr 1fr}
+    .grid-5{grid-template-columns:repeat(3,1fr)}
+    .cer-col-l,.cer-col-r{padding:20px 16px}
+    .cer-col-l{border-right:none;border-bottom:1px solid var(--border)}
+    .raci-header,.raci-row{grid-template-columns:140px repeat(7,1fr);font-size:9px}
+  }
+  @media(max-width:600px){
+    .grid-3{grid-template-columns:1fr}
+    .grid-4{grid-template-columns:1fr 1fr}
+    .grid-5{grid-template-columns:1fr 1fr}
+    header{padding:24px 20px 16px}
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- HEADER                                       -->
+<!-- ═══════════════════════════════════════════ -->
+<header style="border-bottom:1px solid var(--border);padding:32px 48px 24px;display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:16px">
+  <div>
+    <div class="mono" style="font-size:10px;letter-spacing:0.2em;color:var(--muted);text-transform:uppercase;margin-bottom:8px">Software Development Lifecycle</div>
+    <h1 class="serif" style="font-size:clamp(28px,4vw,48px);font-weight:900;letter-spacing:-0.02em;line-height:1;color:var(--text)">NextGen AOP SDLC</h1>
+    <div class="sans" style="font-size:14px;color:var(--muted);margin-top:8px;font-weight:300">AlignOps Engineering & Product responsibilities — with SCRUM framework, ceremonies, and support SLAs.</div>
+  </div>
+  <div class="flex flex-wrap gap-16 items-center">
+    <div class="flex items-center gap-8"><div style="width:10px;height:10px;border-radius:50%;background:#5B8EF0"></div><span class="mono" style="font-size:11px;color:var(--muted);letter-spacing:0.05em">PRODUCT</span></div>
+    <div class="flex items-center gap-8"><div style="width:10px;height:10px;border-radius:50%;background:#4ECDC4"></div><span class="mono" style="font-size:11px;color:var(--muted);letter-spacing:0.05em">ENGINEERING</span></div>
+    <div class="flex items-center gap-8"><div style="width:10px;height:10px;border-radius:50%;background:#E8C547"></div><span class="mono" style="font-size:11px;color:var(--muted);letter-spacing:0.05em">SHARED</span></div>
+    <div class="flex items-center gap-8"><div style="width:10px;height:10px;border-radius:50%;background:#8B5CF6"></div><span class="mono" style="font-size:11px;color:var(--muted);letter-spacing:0.05em">SCRUM MASTER</span></div>
+    <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">☀ Light Mode</button>
+  </div>
+</header>
+
+<!-- MAIN NAV -->
+<nav style="border-bottom:1px solid var(--border);padding:0 48px;display:flex;gap:0;overflow-x:auto">
+  <button class="main-nav-btn active" onclick="switchTab('sdlc',this)">SDLC Phases</button>
+  <button class="main-nav-btn" onclick="switchTab('scrum',this)">SCRUM Ceremonies</button>
+  <button class="main-nav-btn" onclick="switchTab('cadence',this)">Sprint Cadence</button>
+  <button class="main-nav-btn" onclick="switchTab('raci',this)">RACI Matrix</button>
+  <button class="main-nav-btn" onclick="switchTab('support',this)">Support &amp; SLA</button>
+  <button class="main-nav-btn" onclick="switchTab('aidlc',this)">AI-DLC</button>
+</nav>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- TAB: SDLC PHASES                            -->
+<!-- ═══════════════════════════════════════════ -->
+<div id="tab-sdlc">
+  <!-- Phase pills -->
+  <div style="padding:24px 48px;border-bottom:1px solid var(--border);display:flex;gap:8px;overflow-x:auto;flex-wrap:wrap" id="phasePills"></div>
+
+  <div class="page-section" id="phaseContent"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- TAB: SCRUM CEREMONIES                       -->
+<!-- ═══════════════════════════════════════════ -->
+<div id="tab-scrum" class="hidden page-section">
+  <div style="margin-bottom:32px">
+    <h2 class="serif" style="font-size:32px;font-weight:700;color:var(--text);margin-bottom:8px">SCRUM Ceremonies</h2>
+    <p class="sans" style="font-size:14px;color:var(--muted);font-weight:300">Six ceremonies forming the heartbeat of every sprint — defined owners, agendas, and anti-patterns.</p>
+  </div>
+  <div class="grid-3" id="ceremonyCards" style="margin-bottom:40px"></div>
+  <div id="ceremonyDetail"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- TAB: SPRINT CADENCE                         -->
+<!-- ═══════════════════════════════════════════ -->
+<div id="tab-cadence" class="hidden page-section">
+  <div style="margin-bottom:32px">
+    <h2 class="serif" style="font-size:32px;font-weight:700;color:var(--text);margin-bottom:8px">Sprint Cadence</h2>
+    <p class="sans" style="font-size:14px;color:var(--muted);font-weight:300">A 2-week sprint rhythm showing ceremony placement, development windows, and QA phases.</p>
+  </div>
+  <div class="flex flex-wrap gap-20" style="margin-bottom:28px">
+    <div class="flex items-center gap-8"><div style="width:12px;height:12px;border-radius:3px;background:#8B5CF6"></div><span class="mono" style="font-size:11px;color:var(--muted)">Ceremony</span></div>
+    <div class="flex items-center gap-8"><div style="width:12px;height:12px;border-radius:3px;background:#4ECDC4"></div><span class="mono" style="font-size:11px;color:var(--muted)">Development</span></div>
+    <div class="flex items-center gap-8"><div style="width:12px;height:12px;border-radius:3px;background:#FF6B9D"></div><span class="mono" style="font-size:11px;color:var(--muted)">QA / Testing</span></div>
+    <div class="flex items-center gap-8"><div style="width:12px;height:12px;border-radius:3px;background:#F59E0B"></div><span class="mono" style="font-size:11px;color:var(--muted)">Both</span></div>
+  </div>
+  <div id="sprintCalendar"></div>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:28px 32px;margin-top:16px">
+    <div class="mono" style="font-size:11px;letter-spacing:0.15em;color:var(--muted);text-transform:uppercase;margin-bottom:20px">Sprint Health Metrics</div>
+    <div class="grid-4" id="sprintMetrics"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- TAB: RACI                                   -->
+<!-- ═══════════════════════════════════════════ -->
+<div id="tab-raci" class="hidden page-section">
+  <div style="margin-bottom:32px">
+    <h2 class="serif" style="font-size:32px;font-weight:700;color:var(--text);margin-bottom:8px">RACI Matrix</h2>
+    <p class="sans" style="font-size:14px;color:var(--muted);font-weight:300;margin-bottom:16px">Responsible, Accountable, Consulted, Informed — across all SCRUM activities and roles.</p>
+    <div class="flex gap-16 flex-wrap" id="raciLegend"></div>
+  </div>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;overflow-x:auto">
+    <div id="raciTable"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- TAB: SUPPORT & SLA                          -->
+<!-- ═══════════════════════════════════════════ -->
+<div id="tab-support" class="hidden page-section">
+  <div style="margin-bottom:32px">
+    <h2 class="serif" style="font-size:32px;font-weight:700;color:var(--text);margin-bottom:8px">Support Triage &amp; SLA</h2>
+    <p class="sans" style="font-size:14px;color:var(--muted);font-weight:300">Structured process for ingesting, classifying, escalating, and resolving customer issues — with defined response and resolution SLAs.</p>
+  </div>
+  <div class="mono" style="font-size:11px;letter-spacing:0.15em;color:var(--muted);text-transform:uppercase;margin-bottom:20px">Triage Process Flow</div>
+  <div id="triageFlow" style="display:flex;gap:0;overflow-x:auto;padding-bottom:8px;margin-bottom:40px"></div>
+  <div class="mono" style="font-size:11px;letter-spacing:0.15em;color:var(--muted);text-transform:uppercase;margin-bottom:20px">Priority SLA Tiers</div>
+  <div id="supportTiers" class="flex-col gap-12" style="display:flex;flex-direction:column;gap:12px;margin-bottom:40px"></div>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden">
+    <div style="padding:16px 24px;border-bottom:1px solid var(--border)" class="mono" style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.15em">SLA Quick Reference</div>
+    <div style="overflow-x:auto"><table class="sla-table" id="slaTable"></table></div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- TAB: AI-DLC                                 -->
+<!-- ═══════════════════════════════════════════ -->
+<div id="tab-aidlc" class="hidden page-section">
+  <div id="aidlcContent"></div>
+</div>
+
+<script>
+// ═══════════════════════════════════ DATA ═══════════════════════════════════
+
+const phases = [
+  { id:1, name:"Discovery & Planning", icon:"◈", color:"#E8C547",
+    description:"Align on vision, scope, and feasibility before a single line is written.",
+    scrumLinks:["standup","grooming"],
+    product:[
+      {task:"Market & user research",detail:"Conduct interviews, surveys, competitive analysis to validate the problem space."},
+      {task:"Define problem statement",detail:"Articulate the 'why' — what user pain or business opportunity are we solving?"},
+      {task:"Set OKRs & success metrics",detail:"Define measurable outcomes: retention, activation, revenue, NPS targets."},
+      {task:"Prioritize via roadmap",detail:"Rank initiatives using frameworks (RICE, ICE, MoSCoW) aligned to strategy."},
+      {task:"Stakeholder alignment",detail:"Get exec buy-in, resolve conflicting priorities, communicate the plan."},
+      {task:"Write PRD",detail:"Document goals, user stories, personas, out-of-scope items, and success criteria."},
+    ],
+    engineering:[
+      {task:"Technical feasibility assessment",detail:"Evaluate whether proposed features are achievable with current stack and timeline."},
+      {task:"Identify technical risks early",detail:"Surface unknowns: third-party dependencies, data model changes, platform limits."},
+      {task:"Rough effort estimation",detail:"Provide T-shirt sizing or story points for planning and resourcing."},
+      {task:"Spike planning",detail:"Identify areas needing exploratory research or proof-of-concept work."},
+      {task:"Infrastructure cost forecasting",detail:"Estimate cloud/infra costs for proposed features at scale."},
+    ],
+    shared:["Kickoff meeting to align on goals and constraints","Define MVP vs. full scope","Agree on timelines and milestones"],
+  },
+  { id:2, name:"Design & Architecture", icon:"◉", color:"#5B8EF0",
+    description:"Shape the experience and the system before committing to implementation.",
+    scrumLinks:["refinement","grooming"],
+    product:[
+      {task:"User journey mapping",detail:"Map end-to-end flows across touchpoints to identify friction and gaps."},
+      {task:"Wireframes & lo-fi prototypes",detail:"Create low-fidelity mockups to explore layout and information hierarchy."},
+      {task:"High-fidelity UI design",detail:"Produce pixel-ready designs in Figma with component specs and design tokens."},
+      {task:"Usability testing",detail:"Test prototypes with real users; iterate before engineering begins."},
+      {task:"Content strategy & copy",detail:"Define UX copy, error messages, empty states, and onboarding language."},
+      {task:"Accessibility requirements",detail:"Define WCAG compliance targets and inclusive design patterns."},
+    ],
+    engineering:[
+      {task:"System design & architecture",detail:"Design services, APIs, data models, and integration patterns."},
+      {task:"ADRs (Architecture Decision Records)",detail:"Document key technical decisions with rationale for future reference."},
+      {task:"API contract definition",detail:"Define REST/GraphQL schemas, request/response shapes, error codes."},
+      {task:"Database schema design",detail:"Model entities, relationships, indexes, and migration strategy."},
+      {task:"Security design review",detail:"Identify auth patterns, data encryption needs, and threat vectors."},
+      {task:"Observability planning",detail:"Define what logs, metrics, and traces will be needed in production."},
+    ],
+    shared:["Design reviews between Product/Design and Engineering","Feasibility checks on designs before handoff","Finalize API contracts collaboratively"],
+  },
+  { id:3, name:"Development", icon:"◎", color:"#4ECDC4",
+    description:"Build the thing — with quality, velocity, and collaboration.",
+    scrumLinks:["standup","planning","refinement"],
+    product:[
+      {task:"Backlog grooming & refinement",detail:"Ensure stories are well-defined, sized, and ready for sprint commitment."},
+      {task:"Acceptance criteria definition",detail:"Write clear, testable 'definition of done' for every story."},
+      {task:"Answer questions from engineering",detail:"Be available to clarify requirements; make fast decisions to unblock devs."},
+      {task:"Monitor sprint progress",detail:"Track velocity, flag scope creep, protect the team from external requests."},
+      {task:"Stakeholder updates",detail:"Communicate progress, risks, and changes to business stakeholders."},
+    ],
+    engineering:[
+      {task:"Sprint planning & task breakdown",detail:"Decompose stories into technical tasks with clear ownership."},
+      {task:"Feature development",detail:"Write clean, tested, reviewable code according to agreed patterns."},
+      {task:"Code reviews",detail:"Enforce standards, share knowledge, catch bugs before they ship."},
+      {task:"Unit & integration testing",detail:"Write automated tests alongside features; maintain coverage thresholds."},
+      {task:"Branch management & CI",detail:"Use trunk-based or feature-branch workflows; keep CI green."},
+      {task:"Technical debt tracking",detail:"Log and advocate for time to address debt; avoid letting it compound."},
+      {task:"Documentation",detail:"Write inline docs, README updates, and runbooks as features are built."},
+    ],
+    shared:["Daily standups to sync and remove blockers","Mid-sprint check-ins on scope and timeline","Engineering flags infeasible requirements early"],
+  },
+  { id:4, name:"Testing & QA", icon:"◐", color:"#FF6B9D",
+    description:"Validate that what was built matches what was intended — and won't break.",
+    scrumLinks:["standup","review"],
+    product:[
+      {task:"User acceptance testing (UAT)",detail:"Validate the feature against acceptance criteria and user expectations."},
+      {task:"Edge case & scenario review",detail:"Test against real user behaviors, not just happy paths."},
+      {task:"Copy & UX review",detail:"Check labels, error messages, empty states, and flow consistency."},
+      {task:"Go/no-go decision",detail:"Approve the release or log blockers; own the quality bar for the experience."},
+      {task:"Beta / dogfood coordination",detail:"Organize internal or early-access testing programs."},
+    ],
+    engineering:[
+      {task:"QA test plan & execution",detail:"Write and run functional, regression, and integration test suites."},
+      {task:"Performance testing",detail:"Load test critical paths; benchmark against SLA targets."},
+      {task:"Security testing",detail:"Run SAST/DAST scans; conduct penetration testing on sensitive flows."},
+      {task:"Bug triage & prioritization",detail:"Reproduce, classify (P0–P3), and fix bugs in priority order."},
+      {task:"Browser & device compatibility",detail:"Test across target environments; resolve rendering or behavior differences."},
+      {task:"Staging environment validation",detail:"Verify feature behavior in a production-mirror environment."},
+    ],
+    shared:["Joint bug review sessions to prioritize blockers vs. deferrals","Agree on launch criteria (bug severity thresholds)","Communication plan for found issues"],
+  },
+  { id:5, name:"Release & Deployment", icon:"◑", color:"#A78BFA",
+    description:"Ship safely, communicate clearly, and be ready to respond.",
+    scrumLinks:["review"],
+    product:[
+      {task:"Launch checklist & readiness review",detail:"Verify all teams (support, sales, marketing, legal) are prepared."},
+      {task:"Release notes & changelog",detail:"Write user-facing documentation for what changed and why it matters."},
+      {task:"Go-to-market coordination",detail:"Coordinate announcements, in-app messaging, email campaigns, and docs."},
+      {task:"Support team enablement",detail:"Brief customer support with FAQs, known issues, and escalation paths."},
+      {task:"Feature flag / rollout strategy",detail:"Define rollout percentage, target segments, and rollback triggers."},
+    ],
+    engineering:[
+      {task:"Deployment pipeline execution",detail:"Run CI/CD pipelines; deploy to production via automated or manual process."},
+      {task:"Feature flag configuration",detail:"Set up and manage feature flags for staged rollouts or kill switches."},
+      {task:"Database migrations",detail:"Execute schema migrations safely; validate data integrity post-deploy."},
+      {task:"Smoke testing in production",detail:"Run critical path checks immediately post-deploy to validate health."},
+      {task:"Rollback plan",detail:"Have a documented, tested rollback procedure ready before deploying."},
+      {task:"On-call readiness",detail:"Ensure engineers are available and paged if incidents arise post-deploy."},
+    ],
+    shared:["Deploy window coordination (timing, stakeholder awareness)","Agree on rollback criteria and who pulls the trigger","Incident communication plan if something goes wrong"],
+  },
+  { id:6, name:"Monitoring & Iteration", icon:"◒", color:"#F97316",
+    description:"Learn from production. The launch is not the end — it's the beginning.",
+    scrumLinks:["retro","grooming"],
+    product:[
+      {task:"Monitor product metrics",detail:"Track adoption, activation, retention, and success metrics defined in planning."},
+      {task:"Gather user feedback",detail:"Review support tickets, NPS responses, session recordings, and interviews."},
+      {task:"A/B test analysis",detail:"Evaluate experiment results; make data-driven decisions on variants."},
+      {task:"Iterate on the roadmap",detail:"Feed learnings back into discovery; adjust priorities based on reality."},
+      {task:"Communicate outcomes to stakeholders",detail:"Report on whether OKRs were hit; explain what's next."},
+    ],
+    engineering:[
+      {task:"Monitor system health",detail:"Watch dashboards for latency, error rates, saturation, and traffic anomalies."},
+      {task:"Incident response",detail:"Own detection, triage, mitigation, and postmortem for production incidents."},
+      {task:"Performance optimization",detail:"Identify and fix bottlenecks surfaced by real production traffic."},
+      {task:"Postmortem & blameless review",detail:"Document what happened, root cause, and action items after incidents."},
+      {task:"Tech debt reduction",detail:"Use iteration cycles to refactor, improve test coverage, and modernize code."},
+      {task:"Capacity planning",detail:"Forecast growth needs and scale infrastructure proactively."},
+    ],
+    shared:["Weekly metrics review together","Retrospectives to improve the process","Prioritize bug fixes vs. new features based on impact"],
+  },
+];
+
+const ceremonies = [
+  { id:"standup", name:"Daily Stand-Up", icon:"☀", color:"#F59E0B", cadence:"Daily · 15 min", timeOfDay:"9:00 AM",
+    description:"A brief synchronization ritual to surface blockers, align on daily goals, and maintain team momentum — not a status report.",
+    responsible:{ facilitator:"Scrum Master", participants:["Engineering","Product Manager","QA","Design (when active in sprint)"], optional:["Stakeholders (observer only)"] },
+    agenda:[{item:"What did I complete yesterday?",owner:"Each team member",duration:"1 min/person"},{item:"What will I work on today?",owner:"Each team member",duration:"1 min/person"},{item:"Any blockers or impediments?",owner:"Each team member + SM",duration:"1 min/person"}],
+    antiPatterns:["Becoming a status meeting","Problem-solving during standup","Missing team members skipping async update"],
+    outputs:["Blocker log updated","SM follows up on impediments within 2 hrs"],
+  },
+  { id:"refinement", name:"Backlog Refinement", icon:"✦", color:"#8B5CF6", cadence:"Weekly · 60–90 min", timeOfDay:"Mid-sprint (Wed/Thu)",
+    description:"A forward-looking session to ensure the backlog has enough well-defined, estimated stories ready for the next 1–2 sprints. Prevents sprint planning bottlenecks.",
+    responsible:{ facilitator:"Product Manager", participants:["Tech Lead / Senior Engineers","Scrum Master","QA Lead"], optional:["Design (UX review)","Stakeholders (for complex items)"] },
+    agenda:[{item:"Review top backlog items — clarify requirements",owner:"PM + Engineering",duration:"30 min"},{item:"Identify open questions & dependencies",owner:"Engineering Lead",duration:"15 min"},{item:"Story point estimation (Planning Poker)",owner:"Full team",duration:"30 min"},{item:"Mark stories as Ready or flag for follow-up",owner:"PM",duration:"10 min"}],
+    antiPatterns:["Estimating stories without AC defined","Skipping refinement (causes planning chaos)","PM dictating estimates"],
+    outputs:["2-sprint ready backlog maintained","Stories scored with SP","Open questions logged with owners"],
+    readinessCriteria:["Acceptance criteria written and reviewed","Story sized ≤ 8 SP (else split)","Dependencies identified","Design assets attached if needed","Edge cases documented"],
+  },
+  { id:"grooming", name:"Backlog Grooming", icon:"◈", color:"#06B6D4", cadence:"Bi-weekly · 60 min", timeOfDay:"Start of sprint week 2",
+    description:"A strategic pruning of the overall product backlog — removing stale items, re-prioritizing, and aligning epics to current business goals.",
+    responsible:{ facilitator:"Product Manager", participants:["Product leadership","Tech Lead","Scrum Master"], optional:["Business stakeholders","Customer Success"] },
+    agenda:[{item:"Archive stale / no-longer-relevant stories",owner:"PM",duration:"15 min"},{item:"Re-prioritize epics against OKRs",owner:"PM + Leadership",duration:"20 min"},{item:"Identify new items from support triage / user feedback",owner:"PM + CS",duration:"15 min"},{item:"Agree on top items for upcoming refinement sessions",owner:"PM",duration:"10 min"}],
+    antiPatterns:["Conflating grooming with refinement","Backlog never decreasing (no pruning)","Grooming without strategic alignment"],
+    outputs:["Backlog health score","Updated epic priorities","Support-originated stories ingested"],
+  },
+  { id:"planning", name:"Sprint Planning", icon:"◉", color:"#10B981", cadence:"Every 2 weeks · 2–3 hrs", timeOfDay:"Sprint Day 1 · Morning",
+    description:"The team collectively commits to a realistic sprint goal and selects stories from the ready backlog. Includes capacity planning to protect from over-commitment.",
+    responsible:{ facilitator:"Scrum Master", participants:["Full Engineering Team","Product Manager","QA","Design"], optional:["Engineering Manager"] },
+    agenda:[{item:"Review sprint goal (PM sets intent)",owner:"Product Manager",duration:"15 min"},{item:"Capacity check — PTO, holidays, on-call",owner:"Scrum Master",duration:"20 min"},{item:"Pull top stories from ready backlog into sprint",owner:"PM + Team",duration:"45 min"},{item:"Break stories into tasks; assign ownership",owner:"Engineering",duration:"45 min"},{item:"Confirm sprint commitment & goal",owner:"Scrum Master + PM",duration:"15 min"}],
+    antiPatterns:["Over-committing (ignoring capacity)","Stories not ready entering planning","PM dictating what goes in (vs. team pull)"],
+    outputs:["Sprint board populated","Sprint goal documented","Capacity-adjusted commitment logged"],
+    capacityPlanning:{ formula:"Available SP = (Team × Days × Avg SP/day) × Focus Factor (0.7)", factors:["PTO / holidays","On-call rotations","Support triage duty","Meetings overhead","New member ramp-up"], focusFactor:"70% — accounts for meetings, code review, support, and interruptions" },
+  },
+  { id:"review", name:"Sprint Review", icon:"◑", color:"#EF4444", cadence:"End of sprint · 60–90 min", timeOfDay:"Sprint Day 14 · 2:00 PM",
+    description:"A demo of completed work to stakeholders and the broader team. Builds trust, surfaces feedback early, and celebrates delivery. Not a QA session.",
+    responsible:{ facilitator:"Product Manager", participants:["Full Scrum Team","Key Stakeholders","Customer Success"], optional:["Customers / Beta users","Sales","Marketing"] },
+    agenda:[{item:"Sprint goal recap — did we meet it?",owner:"PM",duration:"5 min"},{item:"Live demo of completed stories",owner:"Engineers / PM",duration:"45 min"},{item:"What didn't make it — and why",owner:"PM + SM",duration:"10 min"},{item:"Stakeholder Q&A and feedback capture",owner:"All",duration:"20 min"}],
+    antiPatterns:["Demoing incomplete work","No stakeholders attending","Turning into a QA session"],
+    outputs:["Demo recording shared","Stakeholder feedback logged in backlog","Velocity updated"],
+  },
+  { id:"retro", name:"Sprint Retrospective", icon:"◒", color:"#F97316", cadence:"End of sprint · 60–75 min", timeOfDay:"Sprint Day 14 · After Review",
+    description:"A safe, blameless space for the team to inspect their process and commit to concrete improvements. The Retro is the team's most powerful lever for compounding performance.",
+    responsible:{ facilitator:"Scrum Master", participants:["Full Scrum Team (Engineering, PM, QA, Design)"], optional:["Engineering Manager (occasional)"], excluded:["Stakeholders","Leadership (creates psychological unsafety)"] },
+    agenda:[{item:"Set the stage — safety check, prime directive",owner:"Scrum Master",duration:"5 min"},{item:"Gather data — What went well? What didn't?",owner:"All (silent writing)",duration:"10 min"},{item:"Theme grouping & dot voting on pain points",owner:"Scrum Master facilitates",duration:"15 min"},{item:"Root cause analysis on top issues",owner:"Team",duration:"15 min"},{item:"Action items: owner + due date committed",owner:"SM documents",duration:"15 min"}],
+    antiPatterns:["No action items (retro theater)","Same complaints every sprint (no follow-through)","Blame culture","SM skipping facilitation"],
+    outputs:["Action items with owners (max 3)","Prior retro actions reviewed","Team health pulse recorded"],
+    formats:["Start / Stop / Continue","4Ls (Liked, Learned, Lacked, Longed For)","Mad / Sad / Glad","Sailboat / Anchors"],
+  },
+];
+
+const sprintWeeks = [
+  { label:"Sprint Week 1 — Build", days:[
+    {day:"Mon",events:["Sprint Planning (AM)","Sprint kickoff"],type:"ceremony"},
+    {day:"Tue",events:["Development","Daily Stand-Up"],type:"dev"},
+    {day:"Wed",events:["Development","Daily Stand-Up","Backlog Refinement (PM)"],type:"both"},
+    {day:"Thu",events:["Development","Daily Stand-Up"],type:"dev"},
+    {day:"Fri",events:["Development","Daily Stand-Up","Backlog Grooming (Bi-weekly)"],type:"dev"},
+  ]},
+  { label:"Sprint Week 2 — Ship", days:[
+    {day:"Mon",events:["Development / QA","Daily Stand-Up"],type:"dev"},
+    {day:"Tue",events:["QA / Bug fixes","Daily Stand-Up"],type:"dev"},
+    {day:"Wed",events:["UAT / Hardening","Daily Stand-Up"],type:"dev"},
+    {day:"Thu",events:["Code freeze","Daily Stand-Up","Final QA"],type:"qa"},
+    {day:"Fri",events:["Sprint Review (2PM)","Sprint Retrospective (4PM)","Deploy (if applicable)"],type:"ceremony"},
+  ]},
+];
+
+const raciRoles = [
+  {id:"pm",label:"Product Manager",color:"#5B8EF0"},
+  {id:"sm",label:"Scrum Master",color:"#8B5CF6"},
+  {id:"eng",label:"Engineering",color:"#4ECDC4"},
+  {id:"qa",label:"QA",color:"#FF6B9D"},
+  {id:"design",label:"Design",color:"#F59E0B"},
+  {id:"cs",label:"Customer Success",color:"#10B981"},
+  {id:"em",label:"Eng Manager",color:"#6B7280"},
+];
+const raciActivities = [
+  {activity:"Define sprint goal",R:"pm",A:"pm",C:"sm,eng",I:"em,cs"},
+  {activity:"Capacity planning",R:"sm",A:"em",C:"eng",I:"pm"},
+  {activity:"Backlog refinement",R:"pm",A:"pm",C:"eng,qa",I:"sm,design"},
+  {activity:"Story estimation",R:"eng",A:"eng",C:"pm,sm",I:"qa"},
+  {activity:"Sprint planning facilitation",R:"sm",A:"sm",C:"pm,eng",I:"em"},
+  {activity:"Daily stand-up facilitation",R:"sm",A:"sm",C:"eng,pm",I:""},
+  {activity:"Feature development",R:"eng",A:"eng",C:"pm,design",I:"qa"},
+  {activity:"Acceptance criteria definition",R:"pm",A:"pm",C:"qa,eng",I:"design"},
+  {activity:"QA execution",R:"qa",A:"qa",C:"eng",I:"pm"},
+  {activity:"Sprint review facilitation",R:"pm",A:"pm",C:"eng,qa,design",I:"cs,em"},
+  {activity:"Retrospective facilitation",R:"sm",A:"sm",C:"eng,pm,qa",I:"em"},
+  {activity:"Support triage (P1/P2)",R:"eng",A:"em",C:"cs,pm",I:"sm"},
+  {activity:"Support triage (P3/P4)",R:"cs",A:"pm",C:"eng",I:"sm"},
+  {activity:"Release decision (go/no-go)",R:"pm",A:"pm",C:"eng,qa",I:"cs,em"},
+  {activity:"Retro action follow-through",R:"sm",A:"sm",C:"team",I:"em"},
+];
+
+const supportTiers = [
+  { priority:"P1", label:"Critical", color:"#EF4444", bgVar:"--p1-bg", borderVar:"--p1-border",
+    description:"Complete service outage or data loss. Business operations halted.",
+    examples:["Site/API completely down","Data breach or corruption","Authentication system failure","Payment processing failure"],
+    responseSLA:"15 minutes", resolutionSLA:"2 hours", initialOwner:"On-call Engineer",
+    escalationPath:["On-call Engineer → Engineering Lead (30 min)","Engineering Lead → EM + PM (1 hr)","EM → CTO (if unresolved at 2 hrs)"],
+    communicationCadence:"Every 30 min stakeholder update", postIncident:"Blameless postmortem within 48 hrs",
+  },
+  { priority:"P2", label:"High", color:"#F97316", bgVar:"--p2-bg", borderVar:"--p2-border",
+    description:"Major feature unavailable or significant performance degradation. Workaround exists but painful.",
+    examples:["Core feature broken for subset of users","Severe performance degradation (>3× normal latency)","Data sync failures","Integration partner outage"],
+    responseSLA:"1 hour", resolutionSLA:"8 hours", initialOwner:"On-call Engineer + PM",
+    escalationPath:["CS → PM + Engineering (1 hr)","Engineering Lead engaged by 2 hrs","EM notified if unresolved at 4 hrs"],
+    communicationCadence:"Every 2 hrs stakeholder update", postIncident:"Root cause analysis within 5 business days",
+  },
+  { priority:"P3", label:"Medium", color:"#F59E0B", bgVar:"--p3-bg", borderVar:"--p3-border",
+    description:"Non-critical feature impacted. Workaround available. Users inconvenienced but not blocked.",
+    examples:["UI display bug","Non-critical integration degraded","Feature behaving unexpectedly (minor)","Performance slightly degraded"],
+    responseSLA:"4 business hours", resolutionSLA:"3 business days", initialOwner:"Customer Success → PM",
+    escalationPath:["CS triages and logs ticket","PM prioritizes in next refinement","Engineering picks up in upcoming sprint"],
+    communicationCadence:"Customer updated daily", postIncident:"Ticket documented; no formal postmortem",
+  },
+  { priority:"P4", label:"Low", color:"#6B7280", bgVar:"--p4-bg", borderVar:"--p4-border",
+    description:"Minor issue, cosmetic bug, or feature request. No user impact to core workflows.",
+    examples:["Typo or label error","Minor visual inconsistency","Feature enhancement request","Documentation update needed"],
+    responseSLA:"1 business day", resolutionSLA:"Next available sprint (best effort)", initialOwner:"Customer Success",
+    escalationPath:["CS logs ticket","PM reviews in bi-weekly grooming","Engineering prioritizes as capacity allows"],
+    communicationCadence:"Customer updated on resolution", postIncident:"Ticket closed with notes",
+  },
+];
+
+const triageSteps = [
+  {step:1,title:"Intake",owner:"Customer Success",detail:"Issue reported via support channel. CS logs structured ticket with: affected user count, reproduction steps, environment, business impact."},
+  {step:2,title:"Initial Triage",owner:"CS + PM",detail:"CS assesses severity within 15 min. Applies preliminary P1–P4 classification. Notifies PM for P1/P2. Pings on-call engineer for P1."},
+  {step:3,title:"Engineering Assessment",owner:"On-call / Assigned Engineer",detail:"Engineer confirms or adjusts severity. Investigates root cause. Communicates ETA to CS within SLA response window."},
+  {step:4,title:"Resolution",owner:"Engineering",detail:"Fix deployed or workaround documented. CS communicates resolution to customer. Ticket closed with resolution notes and root cause."},
+  {step:5,title:"Backlog Ingestion",owner:"PM",detail:"P3/P4 tickets logged to product backlog. PM prioritizes in next grooming session. Patterns across tickets surface roadmap items."},
+  {step:6,title:"Post-Incident Review",owner:"Engineering + PM",detail:"P1: blameless postmortem within 48 hrs. P2: RCA within 5 days. Action items logged to backlog and sprint-prioritized."},
+];
+
+// ═══════════════════════════════════ STATE ═══════════════════════════════════
+let activePhase = 0;
+let activeColTab = "both";
+let activeCeremony = 0;
+let expandedTier = null;
+let isDark = true; // start dark
+
+// ═══════════════════════════════════ THEME ═══════════════════════════════════
+function toggleTheme() {
+  isDark = !isDark;
+  document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+  document.getElementById('themeBtn').textContent = isDark ? '☀ Light Mode' : '☾ Dark Mode';
+}
+// Initialize dark
+document.documentElement.setAttribute('data-theme', 'dark');
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('themeBtn').textContent = '☀ Light Mode';
+});
+
+// ═══════════════════════════════════ NAV ═══════════════════════════════════
+function switchTab(id, btn) {
+  document.querySelectorAll('[id^="tab-"]').forEach(el => el.classList.add('hidden'));
+  document.getElementById('tab-' + id).classList.remove('hidden');
+  document.querySelectorAll('.main-nav-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// ═══════════════════════════════════ SDLC PHASES ════════════════════════════
+function renderPhases() {
+  // Pills
+  const pillsEl = document.getElementById('phasePills');
+  pillsEl.innerHTML = phases.map((p,i) => `
+    <button class="phase-pill" onclick="selectPhase(${i})" id="pill-${i}" style="
+      background:${activePhase===i?p.color:'var(--surface)'};
+      color:${activePhase===i?'#fff':'var(--muted)'};
+      border:1px solid ${activePhase===i?p.color:'var(--border)'};
+      border-radius:100px;padding:8px 18px;
+      font-family:'Inter',sans-serif;font-size:12px;
+      font-weight:${activePhase===i?'600':'400'};
+      display:flex;align-items:center;gap:8px;white-space:nowrap">
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;opacity:0.6">0${p.id}</span>
+      ${p.name}
+    </button>`).join('');
+  renderPhaseContent();
+}
+
+function selectPhase(i) {
+  activePhase = i;
+  renderPhases();
+renderAiDlc();
+}
+
+function selectColTab(t) {
+  activeColTab = t;
+  renderPhaseContent();
+}
+
+function renderPhaseContent() {
+  const p = phases[activePhase];
+  const el = document.getElementById('phaseContent');
+  const linksHtml = p.scrumLinks.map(id => {
+    const c = ceremonies.find(x=>x.id===id);
+    return c ? `<span onclick="goToCeremony('${id}')" style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:${c.color};border:1px solid ${c.color};border-radius:100px;padding:3px 10px;cursor:pointer;letter-spacing:0.05em">${c.name}</span>` : '';
+  }).join('');
+
+  const tabBtns = ['both','product','engineering'].map(t => {
+    const bg = activeColTab===t ? (t==='product'?'#3B6FE0':t==='engineering'?'#0FA89A':'var(--tab-both)') : 'transparent';
+    const col = activeColTab===t ? (t==='both'?'var(--text)':'#fff') : 'var(--muted)';
+    return `<button class="tab-btn-sm" onclick="selectColTab('${t}')" style="background:${bg};color:${col}">${t==='both'?'All':t.charAt(0).toUpperCase()+t.slice(1)}</button>`;
+  }).join('');
+
+  const productHtml = (activeColTab==='both'||activeColTab==='product') ? `
+    <div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;padding-bottom:12px;border-bottom:2px solid #5B8EF0">
+        <div style="width:8px;height:8px;border-radius:50%;background:#5B8EF0"></div>
+        <span class="mono" style="font-size:11px;letter-spacing:0.15em;color:#5B8EF0;text-transform:uppercase;font-weight:500">Product Responsibilities</span>
+        <span class="mono" style="margin-left:auto;font-size:10px;color:var(--muted)">${p.product.length} tasks</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        ${p.product.map(item=>`
+        <div class="task-card task-card-inner" style="border-left:3px solid #5B8EF0">
+          <div class="sans" style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px">${item.task}</div>
+          <div class="sans" style="font-size:12px;color:var(--muted);line-height:1.5;font-weight:300">${item.detail}</div>
+        </div>`).join('')}
+      </div>
+    </div>` : '';
+
+  const engHtml = (activeColTab==='both'||activeColTab==='engineering') ? `
+    <div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;padding-bottom:12px;border-bottom:2px solid #4ECDC4">
+        <div style="width:8px;height:8px;border-radius:50%;background:#4ECDC4"></div>
+        <span class="mono" style="font-size:11px;letter-spacing:0.15em;color:#4ECDC4;text-transform:uppercase;font-weight:500">Engineering Responsibilities</span>
+        <span class="mono" style="margin-left:auto;font-size:10px;color:var(--muted)">${p.engineering.length} tasks</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        ${p.engineering.map(item=>`
+        <div class="task-card task-card-inner" style="border-left:3px solid #4ECDC4">
+          <div class="sans" style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px">${item.task}</div>
+          <div class="sans" style="font-size:12px;color:var(--muted);line-height:1.5;font-weight:300">${item.detail}</div>
+        </div>`).join('')}
+      </div>
+    </div>` : '';
+
+  const dotsHtml = phases.map((ph,i)=>`
+    <div class="nav-dot ${activePhase===i?'active':''}" onclick="selectPhase(${i})" style="width:${activePhase===i?'24px':'6px'};background:${activePhase===i?ph.color:'var(--border)'}"></div>`).join('');
+
+  el.innerHTML = `
+    <div style="margin-bottom:32px;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:16px">
+      <div>
+        <div style="display:flex;align-items:center;gap:16px;margin-bottom:10px">
+          <span style="font-size:32px;color:${p.color}">${p.icon}</span>
+          <h2 class="serif" style="font-size:clamp(22px,3vw,36px);font-weight:700;color:var(--text);letter-spacing:-0.01em">Phase ${p.id}: ${p.name}</h2>
+        </div>
+        <p class="sans" style="font-size:15px;color:var(--muted);font-weight:300;max-width:600px;line-height:1.6">${p.description}</p>
+        <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <span class="mono" style="font-size:10px;color:var(--muted);letter-spacing:0.1em">KEY CEREMONIES:</span>
+          ${linksHtml}
+        </div>
+      </div>
+      <div style="display:flex;gap:4px;background:var(--surface);padding:4px;border-radius:8px;border:1px solid var(--border)">${tabBtns}</div>
+    </div>
+    <div style="display:grid;grid-template-columns:${activeColTab==='both'?'1fr 1fr':'1fr'};gap:24px;margin-bottom:32px">
+      ${productHtml}${engHtml}
+    </div>
+    <div style="background:var(--shared-bg);border:1px solid var(--shared-border);border-left:3px solid var(--shared-accent);border-radius:8px;padding:20px 24px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+        <div style="width:8px;height:8px;border-radius:50%;background:var(--shared-accent)"></div>
+        <span class="mono" style="font-size:11px;letter-spacing:0.15em;color:var(--shared-accent);text-transform:uppercase;font-weight:500">Shared Touchpoints — Collaboration Required</span>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:10px">
+        ${p.shared.map(item=>`<div class="shared-pill">${item}</div>`).join('')}
+      </div>
+    </div>
+    <div style="margin-top:40px;display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--border);padding-top:24px">
+      <button onclick="selectPhase(Math.max(0,${activePhase}-1))" ${activePhase===0?'disabled':''} style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.1em;color:${activePhase===0?'var(--border)':'var(--muted)'};background:transparent;border:1px solid var(--border);border-radius:4px;padding:8px 16px;text-transform:uppercase;cursor:${activePhase===0?'default':'pointer'}">← Previous Phase</button>
+      <div style="display:flex;gap:6px">${dotsHtml}</div>
+      <button onclick="selectPhase(Math.min(${phases.length-1},${activePhase}+1))" ${activePhase===phases.length-1?'disabled':''} style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.1em;color:${activePhase===phases.length-1?'var(--border)':p.color};background:transparent;border:1px solid ${activePhase===phases.length-1?'var(--border)':p.color};border-radius:4px;padding:8px 16px;text-transform:uppercase;cursor:${activePhase===phases.length-1?'default':'pointer'}">Next Phase →</button>
+    </div>`;
+}
+
+function goToCeremony(id) {
+  const idx = ceremonies.findIndex(c=>c.id===id);
+  activeCeremony = idx;
+  document.querySelectorAll('[id^="tab-"]').forEach(el=>el.classList.add('hidden'));
+  document.getElementById('tab-scrum').classList.remove('hidden');
+  document.querySelectorAll('.main-nav-btn').forEach((b,i)=>{ if(i===1) b.classList.add('active'); else b.classList.remove('active'); });
+  renderCeremonies();
+}
+
+// ═══════════════════════════════════ CEREMONIES ══════════════════════════════
+function renderCeremonies() {
+  renderCeremonyCards();
+  renderCeremonyDetail();
+}
+
+function renderCeremonyCards() {
+  document.getElementById('ceremonyCards').innerHTML = ceremonies.map((c,i)=>`
+    <div class="ceremony-card" onclick="selectCeremony(${i})" style="background:${activeCeremony===i?c.color:'var(--surface)'};border:1px solid ${activeCeremony===i?c.color:'var(--border)'};box-shadow:${activeCeremony===i?`0 4px 20px ${c.color}40`:'none'}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+        <span style="font-size:24px;color:${activeCeremony===i?'#fff':c.color}">${c.icon}</span>
+        <span class="mono" style="font-size:9px;color:${activeCeremony===i?'rgba(255,255,255,0.7)':'var(--muted)'};letter-spacing:0.05em;text-align:right">${c.cadence}</span>
+      </div>
+      <div class="sans" style="font-size:13px;font-weight:600;color:${activeCeremony===i?'#fff':'var(--text)'};margin-bottom:4px">${c.name}</div>
+      <div class="mono" style="font-size:9px;color:${activeCeremony===i?'rgba(255,255,255,0.7)':'var(--muted)'}">${c.timeOfDay}</div>
+    </div>`).join('');
+}
+
+function selectCeremony(i) {
+  activeCeremony = i;
+  renderCeremonies();
+}
+
+function renderCeremonyDetail() {
+  const c = ceremonies[activeCeremony];
+  const respHtml = `
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <span class="mono" style="font-size:10px;color:${c.color};min-width:80px;padding-top:2px">FACILITATOR</span>
+        <span class="sans" style="font-size:13px;font-weight:600;color:var(--text);background:${c.color}18;border:1px solid ${c.color}40;border-radius:6px;padding:4px 10px">${c.responsible.facilitator}</span>
+      </div>
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <span class="mono" style="font-size:10px;color:var(--muted);min-width:80px;padding-top:4px">REQUIRED</span>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">
+          ${c.responsible.participants.map(p=>`<span class="sans" style="font-size:11px;color:var(--text);background:var(--subtle);border:1px solid var(--border);border-radius:4px;padding:3px 8px">${p}</span>`).join('')}
+        </div>
+      </div>
+      ${c.responsible.optional?`<div style="display:flex;gap:12px;align-items:flex-start">
+        <span class="mono" style="font-size:10px;color:var(--muted);min-width:80px;padding-top:4px">OPTIONAL</span>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">${c.responsible.optional.map(p=>`<span class="sans" style="font-size:11px;color:var(--muted);background:var(--surface);border:1px dashed var(--border);border-radius:4px;padding:3px 8px">${p}</span>`).join('')}</div>
+      </div>`:''}
+      ${c.responsible.excluded?`<div style="display:flex;gap:12px;align-items:flex-start">
+        <span class="mono" style="font-size:10px;color:#EF4444;min-width:80px;padding-top:4px">EXCLUDED</span>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">${c.responsible.excluded.map(p=>`<span class="sans" style="font-size:11px;color:#EF4444;background:var(--anti-bg);border:1px solid var(--anti-border);border-radius:4px;padding:3px 8px">${p}</span>`).join('')}</div>
+      </div>`:''}
+    </div>`;
+
+  const agendaHtml = c.agenda.map((a,i)=>`
+    <div style="display:flex;gap:12px;align-items:flex-start;padding:10px 12px;background:var(--bg);border-radius:6px;border:1px solid var(--border)">
+      <span class="mono" style="font-size:10px;color:${c.color};min-width:20px;padding-top:2px">${i+1}.</span>
+      <div style="flex:1">
+        <div class="sans" style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:2px">${a.item}</div>
+        <div class="mono" style="font-size:10px;color:var(--muted)">${a.owner} · ${a.duration}</div>
+      </div>
+    </div>`).join('');
+
+  const outputsHtml = c.outputs.map(o=>`
+    <div style="display:flex;gap:10px;align-items:center">
+      <span style="color:${c.color};font-size:14px">✓</span>
+      <span class="sans" style="font-size:12px;color:var(--text)">${o}</span>
+    </div>`).join('');
+
+  const antiHtml = c.antiPatterns.map(ap=>`
+    <div class="anti-card">
+      <span style="color:#EF4444;font-size:12px;min-width:14px">✕</span>
+      ${ap}
+    </div>`).join('');
+
+  let extraHtml = '';
+  if (c.readinessCriteria) {
+    extraHtml += `<div style="margin-bottom:24px">
+      <div class="mono" style="font-size:10px;letter-spacing:0.15em;color:#8B5CF6;text-transform:uppercase;margin-bottom:12px">Story Readiness Criteria</div>
+      ${c.readinessCriteria.map(r=>`<div style="display:flex;gap:10px;align-items:center;margin-bottom:6px"><span style="color:#8B5CF6;font-size:12px">◆</span><span class="sans" style="font-size:12px;color:var(--text)">${r}</span></div>`).join('')}
+    </div>`;
+  }
+  if (c.formats) {
+    extraHtml += `<div>
+      <div class="mono" style="font-size:10px;letter-spacing:0.15em;color:var(--muted);text-transform:uppercase;margin-bottom:12px">Format Options</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px">${c.formats.map(f=>`<span class="sans" style="font-size:11px;color:var(--text);background:var(--subtle);border:1px solid var(--border);border-radius:100px;padding:4px 12px">${f}</span>`).join('')}</div>
+    </div>`;
+  }
+  if (c.capacityPlanning) {
+    extraHtml += `<div>
+      <div class="mono" style="font-size:10px;letter-spacing:0.15em;color:#10B981;text-transform:uppercase;margin-bottom:12px">Capacity Planning</div>
+      <div class="cap-box">
+        <div class="mono" style="font-size:11px;color:var(--cap-label);margin-bottom:4px">Formula</div>
+        <div class="mono" style="font-size:10px;color:var(--cap-text);line-height:1.5">${c.capacityPlanning.formula}</div>
+      </div>
+      <div class="mono" style="font-size:10px;color:var(--muted);margin-bottom:8px">Deductions:</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px">${c.capacityPlanning.factors.map(f=>`<span class="cap-pill">${f}</span>`).join('')}</div>
+    </div>`;
+  }
+
+  document.getElementById('ceremonyDetail').innerHTML = `
+    <div class="cer-detail">
+      <div style="background:${c.color};padding:28px 32px;color:#fff">
+        <div style="display:flex;align-items:center;gap:16px;margin-bottom:12px">
+          <span style="font-size:36px">${c.icon}</span>
+          <div>
+            <h3 class="serif" style="font-size:28px;font-weight:700;margin-bottom:4px">${c.name}</h3>
+            <div class="mono" style="font-size:11px;opacity:0.8">${c.cadence} · ${c.timeOfDay}</div>
+          </div>
+        </div>
+        <p class="sans" style="font-size:14px;font-weight:300;line-height:1.6;max-width:700px;opacity:0.9">${c.description}</p>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr">
+        <div class="cer-col-l">
+          <div style="margin-bottom:28px">
+            <div class="mono" style="font-size:10px;letter-spacing:0.15em;color:var(--muted);text-transform:uppercase;margin-bottom:14px">Responsible Parties</div>
+            ${respHtml}
+          </div>
+          <div>
+            <div class="mono" style="font-size:10px;letter-spacing:0.15em;color:var(--muted);text-transform:uppercase;margin-bottom:14px">Agenda</div>
+            <div style="display:flex;flex-direction:column;gap:8px">${agendaHtml}</div>
+          </div>
+        </div>
+        <div class="cer-col-r">
+          <div style="margin-bottom:24px">
+            <div class="mono" style="font-size:10px;letter-spacing:0.15em;color:var(--muted);text-transform:uppercase;margin-bottom:12px">Outputs &amp; Artifacts</div>
+            <div style="display:flex;flex-direction:column;gap:6px">${outputsHtml}</div>
+          </div>
+          <div style="margin-bottom:24px">
+            <div class="mono" style="font-size:10px;letter-spacing:0.15em;color:#EF4444;text-transform:uppercase;margin-bottom:12px">Anti-Patterns to Avoid</div>
+            <div style="display:flex;flex-direction:column;gap:6px">${antiHtml}</div>
+          </div>
+          ${extraHtml}
+        </div>
+      </div>
+    </div>`;
+}
+
+// ═══════════════════════════════════ SPRINT CALENDAR ════════════════════════
+function renderSprintCalendar() {
+  const typeColor = t => t==='ceremony'?'#8B5CF6':t==='dev'?'#4ECDC4':t==='qa'?'#FF6B9D':'#F59E0B';
+  document.getElementById('sprintCalendar').innerHTML = sprintWeeks.map(week=>`
+    <div style="margin-bottom:32px">
+      <div class="mono" style="font-size:12px;letter-spacing:0.15em;color:var(--muted);text-transform:uppercase;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--border)">${week.label}</div>
+      <div class="grid-5">
+        ${week.days.map(d=>{
+          const tc = typeColor(d.type);
+          return `<div class="cal-cell" style="border-top:3px solid ${tc}">
+            <div class="mono" style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:12px">${d.day}</div>
+            <div style="display:flex;flex-direction:column;gap:6px">
+              ${d.events.map(e=>{
+                const isCeremony = /Planning|Review|Retro|Refinement|Grooming|Stand-Up/.test(e);
+                return `<div class="sans" style="font-size:11px;color:${isCeremony?tc:'var(--muted)'};font-weight:${isCeremony?'600':'400'};background:${isCeremony?tc+'12':'transparent'};padding:${isCeremony?'4px 8px':'2px 0'};border-radius:${isCeremony?'4px':'0'};border:${isCeremony?`1px solid ${tc}30`:'none'}">${e}</div>`;
+              }).join('')}
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`).join('');
+}
+
+// ═══════════════════════════════════ RACI ════════════════════════════════════
+function renderRaci() {
+  const codeColor = {R:'#10B981',A:'#EF4444',C:'#F59E0B',I:'#9CA3AF'};
+  const headerHtml = `
+    <div class="raci-header">
+      <div class="mono" style="font-size:10px;color:rgba(var(--rgb-text,255,255,255),0.6);letter-spacing:0.1em;color:rgba(255,255,255,0.5)">ACTIVITY</div>
+      ${raciRoles.map(r=>`
+      <div style="text-align:center">
+        <div style="width:8px;height:8px;border-radius:50%;background:${r.color};margin:0 auto 4px"></div>
+        <div class="mono" style="font-size:9px;color:rgba(255,255,255,0.7);letter-spacing:0.05em;line-height:1.3">${r.label.split(' ').join('<br>')}</div>
+      </div>`).join('')}
+    </div>`;
+
+  const rowsHtml = raciActivities.map((row,ri)=>{
+    const getCodes = rid => {
+      const codes = [];
+      if(row.R && row.R.split(',').includes(rid)) codes.push('R');
+      if(row.A && row.A.split(',').includes(rid)) codes.push('A');
+      if(row.C && row.C.split(',').includes(rid)) codes.push('C');
+      if(row.I && row.I.split(',').includes(rid)) codes.push('I');
+      return codes;
+    };
+    return `<div class="raci-row" style="background:${ri%2===0?'var(--row-alt)':'var(--surface)'}">
+      <div class="sans" style="font-size:12px;color:var(--text);display:flex;align-items:center">${row.activity}</div>
+      ${raciRoles.map(role=>{
+        const codes = getCodes(role.id);
+        return `<div style="display:flex;justify-content:center;align-items:center;gap:3px">
+          ${codes.length===0?`<span style="color:var(--border);font-size:12px">·</span>`:
+          codes.map(code=>`<span class="mono" style="font-size:11px;font-weight:700;color:${codeColor[code]};background:${codeColor[code]}15;border-radius:4px;padding:2px 5px">${code}</span>`).join('')}
+        </div>`;
+      }).join('')}
+    </div>`;
+  }).join('');
+
+  document.getElementById('raciTable').innerHTML = headerHtml + rowsHtml;
+}
+
+// ═══════════════════════════════════ SUPPORT ═════════════════════════════════
+function renderSupport() {
+  // Triage flow
+  document.getElementById('triageFlow').innerHTML = triageSteps.map((step,i)=>`
+    <div style="display:flex;align-items:stretch;min-width:160px;flex:1">
+      <div class="triage-step" style="border-radius:${i===0?'10px 0 0 10px':i===triageSteps.length-1?'0 10px 10px 0':'0'};border-left:${i>0?'none':'1px solid var(--border)'}">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+          <div style="width:22px;height:22px;border-radius:50%;background:var(--text);color:var(--bg);font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">${step.step}</div>
+          <div class="sans" style="font-size:12px;font-weight:600;color:var(--text)">${step.title}</div>
+        </div>
+        <div class="mono" style="font-size:9px;color:#8B5CF6;margin-bottom:6px;letter-spacing:0.05em">${step.owner}</div>
+        <div class="sans" style="font-size:11px;color:var(--muted);line-height:1.5">${step.detail}</div>
+      </div>
+      ${i<triageSteps.length-1?`<div style="display:flex;align-items:center;padding:0 4px;color:var(--muted);font-size:16px;background:var(--surface);border:1px solid var(--border);border-left:none;border-right:none">→</div>`:''}
+    </div>`).join('');
+
+  // Priority tiers
+  document.getElementById('supportTiers').innerHTML = supportTiers.map((tier,i)=>`
+    <div class="priority-tier" style="border:1px solid var(${tier.borderVar});border-left:4px solid ${tier.color}">
+      <div class="tier-header" onclick="toggleTier(${i})" style="background:${expandedTier===i?`var(${tier.bgVar})`:'var(--surface)'}">
+        <span class="mono" style="font-size:18px;font-weight:700;color:${tier.color};min-width:36px">${tier.priority}</span>
+        <span class="sans" style="font-size:14px;font-weight:600;color:var(--text);min-width:80px">${tier.label}</span>
+        <span class="sans" style="font-size:13px;color:var(--muted);flex:1">${tier.description}</span>
+        <div style="display:flex;gap:20px;flex-shrink:0">
+          <div style="text-align:center">
+            <div class="mono" style="font-size:9px;color:var(--muted);letter-spacing:0.1em;margin-bottom:2px">RESPONSE</div>
+            <div class="sans" style="font-size:13px;font-weight:700;color:${tier.color}">${tier.responseSLA}</div>
+          </div>
+          <div style="text-align:center">
+            <div class="mono" style="font-size:9px;color:var(--muted);letter-spacing:0.1em;margin-bottom:2px">RESOLUTION</div>
+            <div class="sans" style="font-size:13px;font-weight:700;color:${tier.color}">${tier.resolutionSLA}</div>
+          </div>
+          <span style="color:var(--muted);font-size:16px">${expandedTier===i?'▲':'▼'}</span>
+        </div>
+      </div>
+      ${expandedTier===i?`
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;border-top:1px solid var(${tier.borderVar});background:var(${tier.bgVar})">
+        <div style="padding:20px 24px;border-right:1px solid var(${tier.borderVar})">
+          <div class="mono" style="font-size:10px;color:${tier.color};text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px">Examples</div>
+          ${tier.examples.map(e=>`<div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:6px"><span style="color:${tier.color};font-size:12px">·</span><span class="sans" style="font-size:12px;color:var(--text)">${e}</span></div>`).join('')}
+        </div>
+        <div style="padding:20px 24px;border-right:1px solid var(${tier.borderVar})">
+          <div class="mono" style="font-size:10px;color:${tier.color};text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px">Escalation Path</div>
+          ${tier.escalationPath.map((e,ei)=>`<div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:8px"><span class="mono" style="font-size:10px;color:${tier.color};min-width:16px">${ei+1}.</span><span class="sans" style="font-size:12px;color:var(--text)">${e}</span></div>`).join('')}
+        </div>
+        <div style="padding:20px 24px">
+          <div class="mono" style="font-size:10px;color:${tier.color};text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px">Communication &amp; Follow-up</div>
+          <div style="padding:10px 12px;background:var(--surface);border-radius:6px;border:1px solid var(${tier.borderVar});margin-bottom:10px">
+            <div class="mono" style="font-size:9px;color:var(--muted);margin-bottom:4px">CADENCE</div>
+            <div class="sans" style="font-size:12px;font-weight:600;color:var(--text)">${tier.communicationCadence}</div>
+          </div>
+          <div style="padding:10px 12px;background:var(--surface);border-radius:6px;border:1px solid var(${tier.borderVar});margin-bottom:10px">
+            <div class="mono" style="font-size:9px;color:var(--muted);margin-bottom:4px">POST-INCIDENT</div>
+            <div class="sans" style="font-size:12px;font-weight:600;color:var(--text)">${tier.postIncident}</div>
+          </div>
+          <div style="padding:10px 12px;background:var(--surface);border-radius:6px;border:1px solid var(${tier.borderVar})">
+            <div class="mono" style="font-size:9px;color:var(--muted);margin-bottom:4px">INITIAL OWNER</div>
+            <div class="sans" style="font-size:12px;font-weight:600;color:${tier.color}">${tier.initialOwner}</div>
+          </div>
+        </div>
+      </div>`:''}
+    </div>`).join('');
+
+  // SLA table
+  document.getElementById('slaTable').innerHTML = `
+    <thead><tr>${['Priority','Severity','First Response','Resolution Target','Initial Owner','Post-Incident'].map(h=>`<th>${h}</th>`).join('')}</tr></thead>
+    <tbody>${supportTiers.map(t=>`
+    <tr class="sla-row">
+      <td><span class="mono" style="font-size:12px;font-weight:700;color:${t.color}">${t.priority}</span></td>
+      <td class="sans" style="font-size:12px;font-weight:600;color:var(--text)">${t.label}</td>
+      <td class="mono" style="font-size:12px;font-weight:600;color:${t.color}">${t.responseSLA}</td>
+      <td class="mono" style="font-size:12px;color:var(--text)">${t.resolutionSLA}</td>
+      <td class="sans" style="font-size:12px;color:var(--muted)">${t.initialOwner}</td>
+      <td class="sans" style="font-size:12px;color:var(--muted)">${t.postIncident}</td>
+    </tr>`).join('')}</tbody>`;
+}
+
+function toggleTier(i) {
+  expandedTier = expandedTier === i ? null : i;
+  renderSupport();
+}
+
+// ═══════════════════════════════════ SPRINT METRICS & RACI LEGEND ═══════════
+function renderSprintMetrics() {
+  const metrics = [
+    ["Velocity","Track trailing 3-sprint avg","Don't commit beyond avg velocity"],
+    ["Sprint Goal Hit Rate","≥ 80%","If below, investigate commitment hygiene"],
+    ["Story Carryover Rate","< 15%","High carryover = estimation or scope issues"],
+    ["Bug Escape Rate","< 5%","Bugs found in prod after release"]
+  ];
+  document.getElementById('sprintMetrics').innerHTML = metrics.map(([m,t,n]) => `
+    <div class="metric-box">
+      <div class="mono" style="font-size:11px;color:var(--muted);margin-bottom:6px">${m}</div>
+      <div class="sans" style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:4px">${t}</div>
+      <div class="sans" style="font-size:11px;color:var(--muted);line-height:1.4">${n}</div>
+    </div>`).join("");
+}
+
+function renderRaciLegend() {
+  const codes = [
+    ["R","Responsible","Does the work","#10B981"],
+    ["A","Accountable","Owns the outcome","#EF4444"],
+    ["C","Consulted","Input required","#F59E0B"],
+    ["I","Informed","Kept in the loop","#9CA3AF"]
+  ];
+  document.getElementById('raciLegend').innerHTML = codes.map(([c,l,d,col]) => `
+    <div class="raci-badge">
+      <span class="mono" style="font-size:14px;font-weight:700;color:${col};min-width:16px">${c}</span>
+      <div>
+        <div class="sans" style="font-size:12px;font-weight:600;color:var(--text)">${l}</div>
+        <div class="sans" style="font-size:11px;color:var(--muted)">${d}</div>
+      </div>
+    </div>`).join("");
+}
+
+
+// ═══════════════════════════════════ AI-DLC DATA ════════════════════════════
+const aidlcPhases = [
+  { id:1, name:"AI Problem Framing", icon:"◈", color:"#A78BFA",
+    description:"Before any model is selected or data pipeline built, rigorously define whether AI is the right solution — and what success looks like.",
+    product:[
+      {task:"Define the AI use case",detail:"Articulate the specific prediction, generation, or decision being automated. Avoid vague goals — define the measurable outcome."},
+      {task:"Identify data availability",detail:"Confirm training data exists, is accessible, and is representative of real production conditions."},
+      {task:"Set AI success metrics",detail:"Define evaluation criteria: accuracy, precision/recall, latency, hallucination rate, user satisfaction scores."},
+      {task:"Assess build vs. buy",detail:"Evaluate fine-tuned OSS models, API-based LLMs, or custom training against cost, control, and capability requirements."},
+      {task:"Ethical & bias review",detail:"Identify potential harms, demographic biases, and fairness constraints before any development begins."},
+      {task:"Define human-in-the-loop requirements",detail:"Determine where human review, override, or approval is mandatory in the AI-powered workflow."},
+    ],
+    engineering:[
+      {task:"Data audit & feasibility",detail:"Assess data volume, quality, labeling status, and pipeline complexity required for training or retrieval."},
+      {task:"Model selection spike",detail:"Evaluate candidate models (OSS, API, fine-tuned) against performance benchmarks and infrastructure constraints."},
+      {task:"Infrastructure scoping",detail:"Estimate compute, storage, vector DB, and serving infrastructure requirements and costs."},
+      {task:"Latency & cost modeling",detail:"Project inference costs and p50/p99 latency at anticipated production request volumes."},
+      {task:"Integration complexity assessment",detail:"Identify upstream/downstream system touchpoints, auth requirements, and data flow architecture."},
+    ],
+    shared:["Agree on 'good enough' threshold — AI doesn't need to be perfect to ship","Align on fallback behavior when model confidence is low","Define data privacy and PII handling constraints upfront"],
+  },
+  { id:2, name:"Data & Model Development", icon:"◉", color:"#6EE7B7",
+    description:"Build the data pipelines, train or configure models, and establish the evaluation harness that governs all future iteration.",
+    product:[
+      {task:"Define prompt architecture (LLM)",detail:"Design system prompts, few-shot examples, and output constraints. Version-control all prompts as code artifacts."},
+      {task:"Labeling & annotation strategy",detail:"Define ground-truth labeling guidelines; manage annotation workforce or tooling (Labelbox, Scale AI, etc.)."},
+      {task:"Evaluation dataset curation",detail:"Build representative eval sets covering edge cases, adversarial inputs, and demographic diversity."},
+      {task:"Human eval rubric definition",detail:"Define criteria for human raters: fluency, accuracy, safety, helpfulness — with inter-rater reliability targets."},
+    ],
+    engineering:[
+      {task:"Data pipeline construction",detail:"Build ingestion, cleaning, deduplication, and transformation pipelines. Implement data versioning (DVC, Delta Lake)."},
+      {task:"Feature engineering / embeddings",detail:"Extract, transform, and store features or embeddings for retrieval-augmented or supervised workflows."},
+      {task:"Model training / fine-tuning",detail:"Train or fine-tune on curated datasets. Track all experiments with MLflow, W&B, or equivalent tooling."},
+      {task:"RAG / retrieval architecture",detail:"Build vector stores, chunking strategies, and retrieval pipelines for knowledge-grounded generation."},
+      {task:"Automated eval harness",detail:"Implement regression test suite: unit evals, benchmark datasets, and LLM-as-judge scoring pipelines."},
+      {task:"Prompt versioning & tracking",detail:"Manage prompt variants, model versions, and eval scores as first-class versioned artifacts."},
+    ],
+    shared:["Establish model registry and versioning conventions before first training run","Agree on offline vs. online evaluation strategy and cadence","Define reproducibility standards for all experiments"],
+  },
+  { id:3, name:"AI Safety & Evaluation", icon:"◎", color:"#FCA5A5",
+    description:"Rigorously test model behavior across safety, fairness, robustness, and real-world distribution before any user exposure.",
+    product:[
+      {task:"Red-teaming & adversarial testing",detail:"Systematically probe for harmful outputs, prompt injections, jailbreaks, and policy violations across diverse scenarios."},
+      {task:"Fairness & bias audit",detail:"Evaluate model performance across demographic subgroups; document and mitigate disparate impact."},
+      {task:"User research on AI outputs",detail:"Test AI outputs with real users; measure trust calibration, comprehension, and over-reliance risks."},
+      {task:"Define content policy & guardrails",detail:"Establish what the model will and won't do; document refusal behaviors and edge case handling."},
+    ],
+    engineering:[
+      {task:"Automated safety evaluation",detail:"Run safety classifiers, toxicity detectors, and policy violation checks across eval datasets at CI time."},
+      {task:"Robustness testing",detail:"Test distribution shift, out-of-domain inputs, and degraded input quality (noisy, truncated, adversarial)."},
+      {task:"Guardrail implementation",detail:"Build input/output filtering, PII redaction, topic blocklists, and confidence-based thresholding."},
+      {task:"Latency & load testing",detail:"Benchmark inference under production load; validate SLA targets for p50/p99 response times."},
+      {task:"Regression baseline locking",detail:"Lock current eval scores as baseline; any regression on safety or quality metrics blocks release."},
+    ],
+    shared:["Joint red-team sessions between Product, Engineering, and Trust & Safety","Agree on acceptable failure rates before any user exposure","Document known limitations and communicate them clearly to end users"],
+  },
+  { id:4, name:"AI Deployment & Serving", icon:"◐", color:"#67E8F9",
+    description:"Deploy models safely with staged rollouts, observability baked in, and tested kill switches — AI systems require more cautious release patterns than traditional software.",
+    product:[
+      {task:"AI feature flag strategy",detail:"Use feature flags for per-user, per-segment, or percentage-based AI rollouts with rapid rollback capability."},
+      {task:"User disclosure & consent",detail:"Ensure users know when they are interacting with AI; obtain consent where required by regulation or policy."},
+      {task:"Feedback collection design",detail:"Instrument thumbs up/down, correction flows, and explicit feedback loops to drive continuous model improvement."},
+      {task:"Fallback UX design",detail:"Design graceful degradation — what users see when the model is unavailable, slow, or low-confidence."},
+    ],
+    engineering:[
+      {task:"Model serving infrastructure",detail:"Deploy via managed endpoints (SageMaker, Vertex AI, vLLM) with autoscaling and GPU optimization."},
+      {task:"Shadow mode deployment",detail:"Run new model in parallel with current system; compare outputs without any user exposure to new behavior."},
+      {task:"A/B testing framework",detail:"Implement experiment assignment, metric tracking, and statistical significance monitoring for model variants."},
+      {task:"Cost & token monitoring",detail:"Instrument per-request token usage, cost attribution by feature, and budget alerting with hard limits."},
+      {task:"Model versioning & rollback",detail:"Maintain ability to instantly roll back to prior model version; document and test rollback runbook."},
+      {task:"Canary & blue-green deployments",detail:"Stage AI rollouts through dev -> staging -> canary (1%) -> production with automated health checks at each gate."},
+    ],
+    shared:["Agree on rollout gates: what metrics trigger pause, slowdown, or full rollback","Align on shadow mode duration and success criteria before full traffic shift","Establish hard cost budget per model endpoint with automatic circuit breakers"],
+  },
+  { id:5, name:"AI Monitoring & Governance", icon:"◑", color:"#FDE68A",
+    description:"AI systems degrade silently. Continuous monitoring of model performance, drift, fairness, and costs is not optional — it is the core operational loop.",
+    product:[
+      {task:"Monitor user feedback signals",detail:"Track thumbs, corrections, abandonment, and escalation rates as real-time proxies for model quality."},
+      {task:"Track business impact metrics",detail:"Measure downstream KPIs: task completion, time-to-resolution, error rate reduction, and NPS delta from AI."},
+      {task:"Maintain AI incident log",detail:"Log all notable failures, harmful outputs, and near-misses. Review weekly with Engineering leads."},
+      {task:"Regulatory compliance monitoring",detail:"Track evolving AI regulations (EU AI Act, CCPA, sector-specific rules); maintain living compliance documentation."},
+    ],
+    engineering:[
+      {task:"Data & concept drift detection",detail:"Monitor input distribution shifts and output quality degradation. Alert when drift exceeds defined thresholds."},
+      {task:"Model performance dashboards",detail:"Track accuracy, hallucination rate, latency, error rates, and cost per request in real time."},
+      {task:"Fairness monitoring",detail:"Continuously evaluate performance across demographic subgroups; alert on emerging disparate impact or skew."},
+      {task:"Retraining pipeline automation",detail:"Automate data collection, retraining triggers, eval gating, and staged re-deployment cycles."},
+      {task:"AI-specific postmortems",detail:"For AI incidents, document: what failed, why the model behaved unexpectedly, and systemic preventive fixes."},
+      {task:"Model card maintenance",detail:"Keep model cards, data sheets, and system cards current and accurate with every model update."},
+    ],
+    shared:["Monthly model performance review between Product and Engineering","Quarterly fairness and bias audit with documented findings and action items","Annual regulatory compliance review with Legal and documented sign-off"],
+  },
+];
+
+const aidlcPrinciples = [
+  { icon:"⚖", title:"Fairness by Design", color:"#A78BFA", description:"Evaluate model performance across demographic subgroups at every phase. Bias that isn't measured is bias that ships." },
+  { icon:"✦", title:"Explainability First", color:"#6EE7B7", description:"Users and operators should understand why the model produced an output. Black-box decisions erode trust over time." },
+  { icon:"◈", title:"Safety as a Gate", color:"#FCA5A5", description:"Safety evaluation is not a checkbox — it is a hard release gate. A regression in safety scores blocks deployment, period." },
+  { icon:"◉", title:"Human Oversight", color:"#67E8F9", description:"Define where humans must remain in the loop. Automation bias is a real risk; design systems for calibrated trust." },
+  { icon:"◎", title:"Continuous Evaluation", color:"#FDE68A", description:"Model quality in production drifts. Treat eval as an ongoing operational discipline, not a pre-launch activity." },
+  { icon:"◐", title:"Iterative & Reversible", color:"#F9A8D4", description:"Ship in stages. Every AI deployment must have a tested, instant rollback path. Move fast only when reversibility is guaranteed." },
+];
+
+let activeAiPhase = 0;
+
+// ═══════════════════════════════════ RENDER AI-DLC ══════════════════════════
+function renderAiDlc() {
+  // Principles
+  const principlesHtml = aidlcPrinciples.map(p => `
+    <div style="background:var(--surface);border:1px solid var(--border);border-left:3px solid ${p.color};border-radius:8px;padding:14px 16px;display:flex;gap:12px;align-items:flex-start">
+      <span style="font-size:18px;color:${p.color};flex-shrink:0">${p.icon}</span>
+      <div>
+        <div class="sans" style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:3px">${p.title}</div>
+        <div class="sans" style="font-size:11px;color:var(--muted);line-height:1.5">${p.description}</div>
+      </div>
+    </div>`).join('');
+
+  // Phase pills
+  const pillsHtml = aidlcPhases.map((p,i) => `
+    <button class="phase-pill" onclick="selectAiPhase(${i})" style="
+      background:${activeAiPhase===i ? p.color : 'var(--surface)'};
+      color:${activeAiPhase===i ? '#1A1D27' : 'var(--muted)'};
+      border:1px solid ${activeAiPhase===i ? p.color : 'var(--border)'};
+      border-radius:100px;padding:8px 18px;
+      font-family:'Inter',sans-serif;font-size:12px;
+      font-weight:${activeAiPhase===i ? '600' : '400'};
+      display:flex;align-items:center;gap:8px;white-space:nowrap">
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;opacity:0.6">0${p.id}</span>
+      ${p.name}
+    </button>`).join('');
+
+  const p = aidlcPhases[activeAiPhase];
+
+  // Product tasks
+  const productHtml = p.product.map(item => `
+    <div class="task-card task-card-inner" style="border-left:3px solid #5B8EF0">
+      <div class="sans" style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px">${item.task}</div>
+      <div class="sans" style="font-size:12px;color:var(--muted);line-height:1.5;font-weight:300">${item.detail}</div>
+    </div>`).join('');
+
+  // Engineering tasks
+  const engHtml = p.engineering.map(item => `
+    <div class="task-card task-card-inner" style="border-left:3px solid ${p.color}">
+      <div class="sans" style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px">${item.task}</div>
+      <div class="sans" style="font-size:12px;color:var(--muted);line-height:1.5;font-weight:300">${item.detail}</div>
+    </div>`).join('');
+
+  // Shared pills
+  const sharedHtml = p.shared.map(item => `<div class="shared-pill">${item}</div>`).join('');
+
+  // Nav dots
+  const dotsHtml = aidlcPhases.map((ph,i) => `
+    <div onclick="selectAiPhase(${i})" style="width:${activeAiPhase===i?'24px':'6px'};height:6px;border-radius:3px;background:${activeAiPhase===i?ph.color:'var(--border)'};cursor:pointer;transition:all 0.2s"></div>`).join('');
+
+  document.getElementById('aidlcContent').innerHTML = `
+    <!-- Header -->
+    <div style="margin-bottom:36px">
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:12px">
+        <div style="width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,#A78BFA,#6EE7B7);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0">✦</div>
+        <div>
+          <h2 class="serif" style="font-size:32px;font-weight:700;color:var(--text);letter-spacing:-0.01em">AI Development Lifecycle</h2>
+          <p class="sans" style="font-size:14px;color:var(--muted);font-weight:300;margin-top:4px">A discipline-specific extension of the SDLC for AI/ML features — covering problem framing, data development, safety evaluation, deployment, and governance.</p>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:28px">${principlesHtml}</div>
+    </div>
+
+    <!-- Phase pills -->
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:32px;padding-bottom:24px;border-bottom:1px solid var(--border)">${pillsHtml}</div>
+
+    <!-- Phase detail header -->
+    <div style="margin-bottom:32px">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:10px">
+        <span style="font-size:28px;color:${p.color}">${p.icon}</span>
+        <h3 class="serif" style="font-size:28px;font-weight:700;color:var(--text)">Phase ${p.id}: ${p.name}</h3>
+      </div>
+      <p class="sans" style="font-size:15px;color:var(--muted);font-weight:300;max-width:680px;line-height:1.6">${p.description}</p>
+    </div>
+
+    <!-- Two columns -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:32px">
+      <div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;padding-bottom:12px;border-bottom:2px solid #5B8EF0">
+          <div style="width:8px;height:8px;border-radius:50%;background:#5B8EF0"></div>
+          <span class="mono" style="font-size:11px;letter-spacing:0.15em;color:#5B8EF0;text-transform:uppercase;font-weight:500">Product / AI PM Responsibilities</span>
+          <span class="mono" style="margin-left:auto;font-size:10px;color:var(--muted)">${p.product.length} tasks</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px">${productHtml}</div>
+      </div>
+      <div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;padding-bottom:12px;border-bottom:2px solid ${p.color}">
+          <div style="width:8px;height:8px;border-radius:50%;background:${p.color}"></div>
+          <span class="mono" style="font-size:11px;letter-spacing:0.15em;color:${p.color};text-transform:uppercase;font-weight:500">Engineering / ML Responsibilities</span>
+          <span class="mono" style="margin-left:auto;font-size:10px;color:var(--muted)">${p.engineering.length} tasks</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px">${engHtml}</div>
+      </div>
+    </div>
+
+    <!-- Shared -->
+    <div style="background:var(--shared-bg);border:1px solid var(--shared-border);border-left:3px solid var(--shared-accent);border-radius:8px;padding:20px 24px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+        <div style="width:8px;height:8px;border-radius:50%;background:var(--shared-accent)"></div>
+        <span class="mono" style="font-size:11px;letter-spacing:0.15em;color:var(--shared-accent);text-transform:uppercase;font-weight:500">Shared Touchpoints — Cross-functional Alignment Required</span>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:10px">${sharedHtml}</div>
+    </div>
+
+    <!-- Nav -->
+    <div style="margin-top:40px;display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--border);padding-top:24px">
+      <button onclick="selectAiPhase(Math.max(0,${activeAiPhase}-1))" ${activeAiPhase===0?'disabled':''} style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.1em;color:${activeAiPhase===0?'var(--border)':'var(--muted)'};background:transparent;border:1px solid var(--border);border-radius:4px;padding:8px 16px;text-transform:uppercase;cursor:${activeAiPhase===0?'default':'pointer'}">← Previous Phase</button>
+      <div style="display:flex;gap:6px">${dotsHtml}</div>
+      <button onclick="selectAiPhase(Math.min(${aidlcPhases.length-1},${activeAiPhase}+1))" ${activeAiPhase===aidlcPhases.length-1?'disabled':''} style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:0.1em;color:${activeAiPhase===aidlcPhases.length-1?'var(--border)':p.color};background:transparent;border:1px solid ${activeAiPhase===aidlcPhases.length-1?'var(--border)':p.color};border-radius:4px;padding:8px 16px;text-transform:uppercase;cursor:${activeAiPhase===aidlcPhases.length-1?'default':'pointer'}">Next Phase →</button>
+    </div>`;
+}
+
+function selectAiPhase(i) {
+  activeAiPhase = i;
+  renderAiDlc();
+}
+
+// ═══════════════════════════════════ INIT ════════════════════════════════════
+renderPhases();
+renderAiDlc();
+renderCeremonies();
+renderSprintCalendar();
+renderSprintMetrics();
+renderRaciLegend();
+renderRaci();
+renderSupport();
+</script>
+</body>
+</html>
