@@ -411,18 +411,27 @@ const ceremonies = [
 
 const sprintWeeks = [
   { label:"Sprint Week 1 — Build", days:[
-    {day:"Mon",events:["Sprint Planning (AM)","Sprint kickoff"],type:"ceremony"},
-    {day:"Tue",events:["Development","Daily Stand-Up"],type:"dev"},
-    {day:"Wed",events:["Development","Daily Stand-Up","Backlog Refinement (PM)"],type:"both"},
-    {day:"Thu",events:["Development","Daily Stand-Up"],type:"dev"},
-    {day:"Fri",events:["Development","Daily Stand-Up","Backlog Grooming (Bi-weekly)"],type:"dev"},
+    // {day:"Mon",events:["Sprint Planning (AM)","Sprint kickoff"],type:"ceremony"},
+    // {day:"Tue",events:["Development","Daily Stand-Up"],type:"dev"},
+    {day:"Mon",events:[""],type:"dev"},
+    {day:"Tue",events:[""],type:"dev"},
+    {day:"Wed",events:["Start / Development / QA / UAT","Daily Stand-Up"],type:"both"},
+    {day:"Thu",events:["Development / QA / UAT","Daily Stand-Up","Backlog Refinement"],type:"ceremony"},
+    {day:"Fri",events:["Development / QA / UAT / Brown Bag","Daily Stand-Up"],type:"both"},
   ]},
-  { label:"Sprint Week 2 — Ship", days:[
-    {day:"Mon",events:["Development / QA","Daily Stand-Up"],type:"dev"},
-    {day:"Tue",events:["QA / Bug fixes","Daily Stand-Up"],type:"dev"},
-    {day:"Wed",events:["UAT / Hardening","Daily Stand-Up"],type:"dev"},
-    {day:"Thu",events:["Code freeze","Daily Stand-Up","Final QA"],type:"qa"},
-    {day:"Fri",events:["Sprint Review (2PM)","Sprint Retrospective (4PM)","Deploy (if applicable)"],type:"ceremony"},
+  { label:"Sprint Week 2 - Hardening", days:[
+    {day:"Mon",events:["Development / QA / UAT / Hardening","Daily Stand-Up"],type:"both"},
+    {day:"Tue",events:["Development / QA / UAT / Hardening","Daily Stand-Up","Backlog Grooming"],type:"ceremony"},
+    {day:"Wed",events:["Development / QA / UAT / Hardening","Daily Stand-Up"],type:"both"},
+    {day:"Thu",events:["Development / QA / UAT / Hardening","Daily Stand-Up","Backlog Refinement","Sprint Planning"],type:"ceremony"},
+    {day:"Fri",events:["Development / QA / UAT / Brown Bag","Daily Stand-Up"],type:"both"},
+  ]},
+  { label:"Sprint Week 3 — Ship", days:[
+    {day:"Mon",events:["Development / QA / UAT / Go No-Go","Daily Stand-Up"],type:"both"},
+    {day:"Tue",events:["End / Deployment / Sprint Demo","Sprint Review","Sprint Retrospective"],type:"ceremony"},
+    {day:"Wed",events:[""],type:"dev"},
+    {day:"Thu",events:[""],type:"dev"},
+    {day:"Fri",events:[""],type:"dev"},
   ]},
 ];
 
